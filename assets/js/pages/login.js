@@ -5,7 +5,6 @@ $(function() {
 		$.post( "core.php?l=login", $( "#login" ).serialize(), function( data ) {
 		  if(data.id == 1){
 		   	var url = "index.php";
-		  	//dataG(data.codigo,data.tipo);
 			$(location).attr('href',url);
 		  }else if(data.id == 0){
 		  	$("[name='pass']").val('');
@@ -16,16 +15,7 @@ $(function() {
 		.fail(function() {
 			$("#blogin").removeAttr('disabled','disabled');
 			$("[name='pass']").val('');
-    		swal("Imposible acceder", "...error en su conexión o servidor.", "error");
+    		swal("Imposible acceder", "...se perdio la conexión con el servidor.", "error");
   		})
 	});
-
-/*
-	function dataG(codigo,tipo){
-		$.post( "core.php?l=data",{codigo:codigo,tipo:tipo}, function( data ) {
-		  if(data == 1){console.log('Data Iniciada SAE');}
-		});		
-	}
-*/
-
 });

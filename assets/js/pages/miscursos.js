@@ -1,5 +1,5 @@
 $(function() {
-
+    $('.Sinput').select2();
     function tablaCursos(){
         $.extend( $.fn.dataTable.defaults, {
             autoWidth: false,
@@ -92,11 +92,10 @@ $(function() {
     $(document).on('click', '.asignar', function (e) {
         e.preventDefault();
         var docente     =       $("#codigo").attr('code');
-        var seccion     =       $(this).attr('data-seccion');
-        var codigo      =       $(this).attr('data-curso');
+        var datos       =       $(this).attr('data-datos');
         var id          =       $(this).parent().parent();
         var este        =       $(this);
-        $.post( "core.php?l=Asignarme",{docente: docente,seccion:seccion,codigo:codigo}, function( data ) {
+        $.post( "core.php?l=Asignarme",{docente: docente,datos:datos}, function( data ) {
             if(data.error_code == 1){
                 swal("Oh noes!", data.error, "error");
             }else if(data.error_code == 0){
@@ -115,11 +114,10 @@ $(function() {
     $(document).on('click', '.desasignar', function (e) {
         e.preventDefault();
         var docente     =       $("#codigo").attr('code');
-        var seccion     =       $(this).attr('data-seccion');
-        var codigo      =       $(this).attr('data-curso');
+        var datos       =       $(this).attr('data-datos');
         var id          =       $(this).parent().parent();
         var este        =       $(this);
-        $.post( "core.php?l=Desasignarme",{docente: docente,seccion:seccion,codigo:codigo}, function( data ) {
+        $.post( "core.php?l=Desasignarme",{docente: docente,datos:datos}, function( data ) {
             if(data.error_code == 1){
                 swal("Oh noes!", data.error, "error");
             }else if(data.error_code == 0){
@@ -205,13 +203,13 @@ $(function() {
         }else{
             swal("Error","Es necesario que asigne al menos la primera fila del cronograma.","error");
         }
-    });
+    }); 
 
     $(document).on("click", ".cancelar", function (e) {
         e.preventDefault();
         var perfil = JSON.parse(Cookies.get('perfil'));
         var action = 'ver';
-        //post_data(perfil.codigo,action);
+        post_data(perfil.codigo,action);
         var ver = $(this).attr('data-show');
         var ocultar = $(this).attr('data-hide');
         $('#'+ver).show('slow');
@@ -222,6 +220,12 @@ $(function() {
         $('#Copciones').show();
         $('#cursosA').hide();
     });
+
+    $("#fullzona").on('hidden.bs.modal', function () {
+        jQuery(this).removeData('bs.modal');
+        jQuery(this).find('.modal-content').empty();
+    });
+
 
     $(document).on("click", ".borrar", function (e) {
         e.preventDefault();

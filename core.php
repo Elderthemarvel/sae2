@@ -9,7 +9,34 @@ include("funciones.php");
 	}
     $data = array();
 	//Procesos
-	if($proceso == "upload_file"){
+
+  if ($proceso == "login"){
+    if(isset($_POST['codigo']) && isset($_POST['pass'])){
+      conectar();
+        if($datos = db("select codigo,password,tipo FROM usuarios WHERE codigo = '{$_POST['codigo']}' and password = '".base64_encode($_POST['pass'])."' LIMIT 0, 1",$mysqli)){
+            session_start();
+            $_SESSION['codigo']   =   $_POST['codigo'];
+            $_SESSION['tipo']     =   $datos[0]['tipo'];
+            $data['id']     =   1;
+            $data['codigo'] =   $_SESSION['codigo'];
+            $data['tipo']   =   $_SESSION['tipo'];
+            $data['error']  = "Sin error, acceso correcto.";
+            datosG($_SESSION['codigo'], $_SESSION['tipo']);
+            crearObj($_SESSION['codigo']);
+          }else{
+            $data['id']     =   0;
+            $data['error']  =   "Error en codigo o contraseña.";
+          }
+      cerrar_conex();
+      print json_encode($data);
+    }else{
+      $msg = "Ups, estas intentando hacer trampa, por favor inicia sesión.";
+    }
+    exit;
+  }
+
+
+	elseif($proceso == "upload_file"){
 		if (!empty($_FILES)) {
       $codigo = $_POST['codigo'];
 			if(!is_dir("files/"))
@@ -110,33 +137,14 @@ include("funciones.php");
   exit;
 
 
-	}elseif ($proceso == "login"){
-
-		if(isset($_POST['codigo']) && isset($_POST['pass'])){
-			conectar();
-        if($datos = db("select codigo,password,tipo FROM usuarios WHERE codigo = '{$_POST['codigo']}' and password = '".base64_encode($_POST['pass'])."' LIMIT 0, 1",$mysqli)){
-            session_start();
-            $_SESSION['codigo']   =   $_POST['codigo'];
-            $_SESSION['tipo']     =   $datos[0]['tipo'];
-            $data['id']     =   1;
-            $data['codigo'] =   $_SESSION['codigo'];
-            $data['tipo']   =   $_SESSION['tipo'];
-            $data['error']  = "Sin error, acceso correcto.";
-            datosG($_SESSION['codigo'], $_SESSION['tipo']);
-    			}else{
-            $data['id']     =   0;
-            $data['error']  =   "Error en codigo o contraseña.";
-          }
-      cerrar_conex();
-      print json_encode($data);
-		}else{
-			$msg = "Ups, estas intentando hacer trampa, por favor inicia sesión.";
-		}
-		exit;
+	}
 
 
 
-	}elseif ($proceso == "logout") {
+
+
+
+  elseif ($proceso == "logout") {
     salir();
   }
 
@@ -193,9 +201,7 @@ exit;
 
 
 elseif($proceso == "refreshMisCursos"){
-
-
-  //Cambios de tabla en funcion archivos
+    conectar();
     $codigo = $_POST['codigo'];
     $data['html'] = vermiscursos($codigo);
     print json_encode($data);
@@ -207,22 +213,23 @@ elseif($proceso == "refreshMisCursos"){
 }
 
 elseif($proceso == "bCurso"){
-    $grado    =   $_POST['grado'];
-    $nivel    =   $_POST['nivel'];
-    $carrera  =   $_POST['carrera'];
-    $jornada  =   $_POST['jornada'];
-    $seccion  =   $_POST['seccion'];
-    $docente  =   $_POST['docente'];
+    $datos['g']  =   $_POST['grado'];
+    $datos['n']  =   $_POST['nivel'];
+    $datos['p']  =   $_POST['carrera'];
+    $datos['j']  =   $_POST['jornada'];
+    $datos['s']  =   $_POST['seccion'];
+    $datos['d']  =   $_POST['docente'];
     conectar();
     $t="";
-      if($grado !="" and $nivel !="" and $jornada !=""){
-        $data['html'] = cursos($grado,$nivel,$carrera,$jornada,$t,$docente,$seccion);
-        $data['seccion'] = $seccion;
-        $data['docente'] = $docente;
+      if($datos['g'] !="" and $datos['n'] !="" and $datos['j'] !=""){
+        $data['html'] = cursos($datos);
+        $data['seccion'] = $datos['s'];
+        $data['docente'] = $datos['d'];
 
       }else{
         $data['error']  = "Algo raro pasa aquí, se esta intentando saltar las politicas de seguridad.";
       }
+      echo mysqli_error($mysqli);
     cerrar_conex();
     print json_encode($data);
 
@@ -230,19 +237,17 @@ elseif($proceso == "bCurso"){
 }
 
 elseif($proceso == "Asignarme"){
-    $data     =   array(); 
-    $docente  =   $_POST['docente'];
-    $seccion  =   $_POST['seccion'];
-    $codigo   =   $_POST['codigo'];
-    $ciclo    =   date('Y');
-    if($docente !="" and $seccion !="" and $codigo !=""){
+    $data     =   array();
+    $datos   =   json_decode(base64_decode($_POST['datos']),TRUE);
+
+    if($datos['d'] !="" and $datos['s'] !="" and $datos['c'] !=""){
     conectar();
-    $buscar_asignacion = buscar_asignacion($codigo,$docente,$seccion);
+    $buscar_asignacion = buscar_asignacion($datos);
       if($buscar_asignacion){
           $data['error_code']   =     1;
           $data['error']        =     "Ya tiene asignado este curso, no es posible asignar el mismo curso más de una vez.";
       }else{
-          $guardar = saveAsignacion($codigo,$docente,$seccion);
+          $guardar = saveAsignacion($datos);
           if($guardar == 0){
             $data['error_code']   =     1;
             $data['error']        =     "Algo raro pasó cuando se intentaba guardar está asignación, por favor repórtelo al departamento de desarrollo. \n Data: ".mysqli_error($mysqli);
@@ -262,15 +267,12 @@ elseif($proceso == "Asignarme"){
 
 elseif($proceso == "Desasignarme"){
     $data     =   array(); 
-    $docente  =   $_POST['docente'];
-    $seccion  =   $_POST['seccion'];
-    $codigo   =   $_POST['codigo'];
-    $ciclo    =   date('Y');
-    if($docente !="" and $seccion !="" and $codigo !=""){
+    $datos   =   json_decode(base64_decode($_POST['datos']),TRUE);
+    if($datos['d'] !="" and $datos['s'] !="" and $datos['c'] !=""){
     conectar();
-    $buscar_asignacion = buscar_asignacion($codigo,$docente,$seccion);
+    $buscar_asignacion = buscar_asignacion($datos);
       if($buscar_asignacion){
-          $borrar = borrarAsignacion($docente,$codigo,$seccion);
+          $borrar = borrarAsignacion($datos);
           if($borrar){
             $data['error_code']   =     0;
             $data['error']        =     "Se ha borrado el curso correctamente.";
@@ -466,12 +468,11 @@ exit;
 
 
 elseif($proceso == "RefreshUser"){
-
+  conectar();
     $tipo   = $_POST['tipo'];
     $tabla  = $_POST['tabla'];
-
-    $data['html'] = tabla_usuarios($tabla,$tipo);
-
+    $data['html'] = tabla_usuarios(1,'docentes');
+  cerrar_conex();
     print json_encode($data);
   exit;
 }
@@ -601,18 +602,119 @@ elseif($proceso == "updatefile"){
   }else{
       throw new Exception("Error Processing Request", 1);   
   }
-
-
-
-
-
-
-
-
-
-
-
-
-exit;
+  exit;
   }
 
+  elseif($proceso == "save_jornada"){
+    $i = 0;
+    foreach ($_POST['jornada'] as $valor) {
+      $i++;
+      $data[$i] = $valor;
+    }
+    $data   =   json_encode($data);
+    $nom = "JORNADAS";
+    conectar();
+
+    if($busca = db("SELECT id FROM configuracion WHERE opcion LIKE '{$nom}' and sid LIKE '{$sid}' LIMIT 0,1",$mysqli)){
+      if ($guardar = $mysqli->prepare("UPDATE configuracion SET valor = ? WHERE id = ?")) {
+        $guardar->bind_param('si', $data, $busca[0]['id']);
+        $guardar->execute();
+        $info['error']=false;  
+      }
+    }else{
+       if ($guardar = $mysqli->prepare("INSERT INTO `configuracion` (`sid`, `opcion`, `valor`) VALUES (?,?,?)")){
+          $guardar->bind_param('sss', $sid,$nom,$data);
+          $guardar->execute();
+          $info['error']=false;  
+      }else{
+          $info['error']=true;
+      }     
+    }
+    cerrar_conex();
+  print json_encode($info);
+  exit;
+  }
+
+  elseif($proceso == "save_nivel"){
+    $i = 0;
+    foreach ($_POST['nivel'] as $valor) {
+      $i++;
+      $data[$i] = $valor;
+    }
+    $data   =   json_encode($data);
+    $nom = "NIVELES";
+    conectar();
+    if($busca = db("SELECT id FROM configuracion WHERE opcion LIKE '{$nom}' and sid LIKE '{$sid}' LIMIT 0,1",$mysqli)){
+      if ($guardar = $mysqli->prepare("UPDATE configuracion SET valor = ? WHERE id = ?")) {
+        $guardar->bind_param('si', $data, $busca[0]['id']);
+        $guardar->execute();
+        $info['error']=false;  
+      }
+    }else{
+       if ($guardar = $mysqli->prepare("INSERT INTO `configuracion` (`sid`, `opcion`, `valor`) VALUES (?,?,?)")){
+          $guardar->bind_param('sss', $sid,$nom,$data);
+          $guardar->execute();
+          $info['error']=false;  
+      }else{
+          $info['error']=true;
+      }     
+    }
+    cerrar_conex();
+  print json_encode($info);
+  exit;
+  }
+
+  elseif($proceso == "save_seccion"){
+    $data = $_POST['seccion'];
+    $nom = "SECCIONES";
+    conectar();
+    if($busca = db("SELECT id FROM configuracion WHERE opcion LIKE '{$nom}' and sid LIKE '{$sid}' LIMIT 0,1",$mysqli)){
+      if ($guardar = $mysqli->prepare("UPDATE configuracion SET valor = ? WHERE id = ?")) {
+        $guardar->bind_param('si', $data, $busca[0]['id']);
+        $guardar->execute();
+        $info['error']=false;  
+      }
+    }else{
+       if ($guardar = $mysqli->prepare("INSERT INTO `configuracion` (`sid`, `opcion`, `valor`) VALUES (?,?,?)")){
+          $guardar->bind_param('sss', $sid,$nom,$data);
+          $guardar->execute();
+          $info['error']=false;  
+      }else{
+          $info['error']=true;
+      }     
+    }
+    cerrar_conex();
+  print json_encode($info);
+  exit;
+  }
+
+
+  elseif($proceso == "save_carrera"){
+    $i = 0;
+    foreach ($_POST['carrera'] as $valor) {
+      $i++;
+      $data[$i] = $valor;
+    }
+    $data   =   json_encode($data);
+    
+    $nom = "CARRERAS";
+    conectar();
+    if($busca = db("SELECT id FROM configuracion WHERE opcion LIKE '{$nom}' and sid LIKE '{$sid}' LIMIT 0,1",$mysqli)){
+      if ($guardar = $mysqli->prepare("UPDATE configuracion SET valor = ? WHERE id = ?")) {
+        $guardar->bind_param('si', $data, $busca[0]['id']);
+        $guardar->execute();
+        $info['error']=false;
+      }
+    }else{
+       if ($guardar = $mysqli->prepare("INSERT INTO `configuracion` (`sid`, `opcion`, `valor`) VALUES (?,?,?)")){
+          $guardar->bind_param('sss', $sid,$nom,$data);
+          $guardar->execute();
+          $info['error']=false;  
+      }else{
+          $info['error']=true;
+      }     
+    }
+    cerrar_conex();
+  print json_encode($info);
+  exit;
+  }

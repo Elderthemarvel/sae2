@@ -1,30 +1,19 @@
-<!-- Plantilla HTML -->
-		
-			<div class="panel panel-flat">
-					<div class="panel-heading">
-						<h5 class="panel-title">Tabla de Docentes</h5>
-						<div class="heading-elements">
-							<ul class="icons-list">
+	<div class="panel panel-flat">
+		<div class="panel-heading">
+			<h6 class="panel-title">Docentes</h6>
 
-								<li><a data-toggle="modal" data-target="#Formdocentes"><i class="icon-user-plus" id="agregar"></i></a>	</li>
-								<li><a><i class="icon-user-block" id="bloquear"></i></a>	</li>
-		                		<li><a data-action="collapse"></a></li>
-		                		<li><a data-action="reload"></a></li>
-		                		<li><a data-action="close"></a></li>
-		                	</ul>
-	                	</div>
+				<div class="heading-elements">
+					<div class="heading-btn">
+						<button data-toggle="modal" data-target="#Formdocentes" type="button" class="btn btn-primary btn-icon"> <i class="icon-user-plus" id="agregar"></i> </button>
+						<button id="bloquear" type="button" class="btn btn-info btn-icon"> <i class="icon-user-block"></i> </button>
 					</div>
-
-					<div class="panel-body">
-						Consulta, actualizacion y eliminación de docentes.
-					</div>
-					<div id='docentes'>
-						{tabla}
-					</div>
-						{modaluser}
-			
-			</div>
-
-
-
-
+				</div>
+		</div>
+		<div class="panel-body">
+			<p class="content-group">Consulta, actualizacion y eliminación de docentes.</p>
+			<div id='docentes'>
+				{tabla}
+			</div>			
+		</div>
+		{modaluser}
+	</div>

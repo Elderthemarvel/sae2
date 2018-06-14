@@ -16,13 +16,13 @@ $llave[] = '{Sgrado}';
 $enlace[] = Sgrado(0);
 
 $llave[] = '{Snivel}';
-$enlace[] = Snivel(0);
+$enlace[] = Snivel("nivel",TRUE);
 
 $llave[] = '{Sjornada}';
 $enlace[] = Sjornada();
 
 $llave[] = '{Scarrera}';
-$enlace[] = Snivel(2);
+$enlace[] = Snivel("carrera");
 
 $llave[] = '{Sseccion}';
 $enlace[] = Sseccion();
@@ -34,4 +34,3 @@ cerrar_conex();
 
 $page = str_replace($llave, $enlace, $page);
 echo $page;
-

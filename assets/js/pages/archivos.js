@@ -1,4 +1,5 @@
     $(function(){
+        
         $(".file-styled").uniform({
             fileButtonClass: 'action btn btn-default'
         });
@@ -44,7 +45,6 @@
            }, "json");
         });
 
-
         $('#boton').click(function(){
             var formData = new FormData($(".formulario")[0]);
             var message = ""; 
@@ -75,7 +75,7 @@
             $('#tblarchivos').DataTable();
         });
 
-});
+    });
 
     function post_data(codigo, action, block){
         $(block).block({

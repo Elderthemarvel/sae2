@@ -16,10 +16,8 @@ session_start();
 	<link href="assets/css/components.css" rel="stylesheet" type="text/css">
 	<link href="assets/css/colors.css" rel="stylesheet" type="text/css">
 	<script type="text/javascript" src="assets/js/plugins/notifications/sweet_alert.min.js"></script>
-	<script type="text/javascript" src="assets/js/plugins/loaders/pace.min.js"></script>
 	<script type="text/javascript" src="assets/js/core/libraries/jquery.min.js"></script>
 	<script type="text/javascript" src="assets/js/core/libraries/bootstrap.min.js"></script>
-	<script type="text/javascript" src="assets/js/plugins/loaders/blockui.min.js"></script>
 	<script type="text/javascript" src="assets/js/pages/login.js"></script>
 </head>
 <body class="navbar-bottom login-container">
